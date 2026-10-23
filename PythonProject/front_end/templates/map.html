@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_798a674385c8c0b1d8899c412b8fecd5 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_798a674385c8c0b1d8899c412b8fecd5" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_798a674385c8c0b1d8899c412b8fecd5 = L.map(
+                "map_798a674385c8c0b1d8899c412b8fecd5",
+                {
+                    center: [56.630975, 47.890519],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 14,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_8072c7aa932481b3af8ae71abe4a51a6 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_8072c7aa932481b3af8ae71abe4a51a6.addTo(map_798a674385c8c0b1d8899c412b8fecd5);
+        
+    
+            var marker_1d8baae3a4094b90519b328793e635be = L.marker(
+                [56.628421, 47.937373],
+                {
+}
+            ).addTo(map_798a674385c8c0b1d8899c412b8fecd5);
+        
+    
+            var icon_c3836a085fda42664ac42dc6698706d4 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_95de48d099f2a6289fc5827223f08652 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_7049daea6b3179657a59e8836f2f2269 = $(`<div id="html_7049daea6b3179657a59e8836f2f2269" style="width: 100.0%; height: 100.0%;">Текст при клике</div>`)[0];
+                popup_95de48d099f2a6289fc5827223f08652.setContent(html_7049daea6b3179657a59e8836f2f2269);
+            
+        
+
+        marker_1d8baae3a4094b90519b328793e635be.bindPopup(popup_95de48d099f2a6289fc5827223f08652)
+        ;
+
+        
+    
+    
+            marker_1d8baae3a4094b90519b328793e635be.bindTooltip(
+                `<div>
+                     Наведи курсор
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_1d8baae3a4094b90519b328793e635be.setIcon(icon_c3836a085fda42664ac42dc6698706d4);
+            
+    
+            var marker_6492172c6c0a941adcf91a2d58d21fc1 = L.marker(
+                [56.642188, 47.902142],
+                {
+}
+            ).addTo(map_798a674385c8c0b1d8899c412b8fecd5);
+        
+    
+            var icon_8e3f73acdd24ef013727a077151fb31d = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_6629a36b73420cc031d0251bb355f0ca = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d2df90f1238ef752a257e141198e623c = $(`<div id="html_d2df90f1238ef752a257e141198e623c" style="width: 100.0%; height: 100.0%;">Текст при клике</div>`)[0];
+                popup_6629a36b73420cc031d0251bb355f0ca.setContent(html_d2df90f1238ef752a257e141198e623c);
+            
+        
+
+        marker_6492172c6c0a941adcf91a2d58d21fc1.bindPopup(popup_6629a36b73420cc031d0251bb355f0ca)
+        ;
+
+        
+    
+    
+            marker_6492172c6c0a941adcf91a2d58d21fc1.bindTooltip(
+                `<div>
+                     Наведи курсор
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_6492172c6c0a941adcf91a2d58d21fc1.setIcon(icon_8e3f73acdd24ef013727a077151fb31d);
+            
+    
+            var marker_2c90f47d1f98c562dd04229d94410a09 = L.marker(
+                [56.634308, 47.844685],
+                {
+}
+            ).addTo(map_798a674385c8c0b1d8899c412b8fecd5);
+        
+    
+            var icon_ba30d3c4a9293ad41ad5b4fa92aea441 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_7f85b5936bac33781821a2a3aa9820a7 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_eccbc2a6244a3e991dbe905bf6e1e18b = $(`<div id="html_eccbc2a6244a3e991dbe905bf6e1e18b" style="width: 100.0%; height: 100.0%;">Текст при клике</div>`)[0];
+                popup_7f85b5936bac33781821a2a3aa9820a7.setContent(html_eccbc2a6244a3e991dbe905bf6e1e18b);
+            
+        
+
+        marker_2c90f47d1f98c562dd04229d94410a09.bindPopup(popup_7f85b5936bac33781821a2a3aa9820a7)
+        ;
+
+        
+    
+    
+            marker_2c90f47d1f98c562dd04229d94410a09.bindTooltip(
+                `<div>
+                     Наведи курсор
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_2c90f47d1f98c562dd04229d94410a09.setIcon(icon_ba30d3c4a9293ad41ad5b4fa92aea441);
+            
+    
+            var marker_5968655f8978bfcd9f02b9878ba4f185 = L.marker(
+                [56.646381, 47.841101],
+                {
+}
+            ).addTo(map_798a674385c8c0b1d8899c412b8fecd5);
+        
+    
+            var icon_ed35e479560e5a57b223de9216be3c0d = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_13801915a3ca1d4009925483713d0ea8 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_9d834cbb653aff0eea325fc423602e9f = $(`<div id="html_9d834cbb653aff0eea325fc423602e9f" style="width: 100.0%; height: 100.0%;">Текст при клике</div>`)[0];
+                popup_13801915a3ca1d4009925483713d0ea8.setContent(html_9d834cbb653aff0eea325fc423602e9f);
+            
+        
+
+        marker_5968655f8978bfcd9f02b9878ba4f185.bindPopup(popup_13801915a3ca1d4009925483713d0ea8)
+        ;
+
+        
+    
+    
+            marker_5968655f8978bfcd9f02b9878ba4f185.bindTooltip(
+                `<div>
+                     Наведи курсор
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_5968655f8978bfcd9f02b9878ba4f185.setIcon(icon_ed35e479560e5a57b223de9216be3c0d);
+            
+</script>
+</html>

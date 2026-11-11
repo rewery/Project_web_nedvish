@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Сравнение квартир</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/recommendations.css">
+  <style>
+    body { background:#151a22; color:#edf1f7; }
+    .compare-page { width:min(1100px, calc(100% - 2rem)); margin:4rem auto; }
+    .compare-head { display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1.5rem; }
+    .compare-head h1 { margin:0 0 .35rem; color:#f4f7fb; font-size:clamp(1.5rem,3vw,2.2rem); }
+    .compare-head p { margin:0; color:#9eacbf; }
+    .compare-back { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:.7rem 1rem; border:1px solid #a9c8ed; border-radius:9px; background:#dce9f8; color:#1d2b3c; font-weight:800; text-decoration:none; }
+    .compare-table-wrap { overflow-x:auto; border:1px solid #354458; border-radius:14px; background:#1b2430; }
+    .compare-table { width:100%; min-width:560px; border-collapse:collapse; margin:0; }
+    .compare-table th,.compare-table td { padding:1rem; border-bottom:1px solid #303d4e; text-align:left; vertical-align:top; }
+    .compare-table thead th { color:#f2f5fa; background:#232f3e; }
+    .compare-table tbody th { width:170px; color:#aebdd0; font-weight:700; }
+    .compare-table td { color:#e1e8f1; }
+    .compare-price { color:#fff; font-size:1.1rem; font-weight:800; }
+    .compare-empty { padding:1.5rem; border:1px dashed #52647a; border-radius:12px; color:#c6d0dd; }
+    @media(max-width:650px) { .compare-page { margin:2rem auto; } .compare-head { align-items:flex-start; flex-direction:column; } }
+  </style>
+</head>
+<body>
+  <main class="compare-page">
+    <header class="compare-head">
+      <div><h1>Сравнение квартир</h1><p>Сопоставьте выбранные варианты по основным характеристикам.</p></div>
+      <a class="compare-back" href="index.html#recommendations">← Вернуться к подборке</a>
+    </header>
+    <div id="compare-content" aria-live="polite"></div>
+  </main>
+  <script>
+  (() => {
+    const host = document.getElementById('compare-content');
+    const esc = value => String(value ?? '—').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    let items = [];
+    try { items = JSON.parse(sessionStorage.getItem('recommendation_comparison_items') || '[]'); } catch (_) {}
+    if (!Array.isArray(items) || items.length < 2) {
+      host.innerHTML = '<div class="compare-empty">Для сравнения нужно выбрать минимум две квартиры в результатах подбора.</div>';
+      return;
+    }
+    const fields = [
+      ['Стоимость', row => '<span class="compare-price">' + esc(Number(row.price).toLocaleString('ru-RU')) + ' ₽</span>'],
+      ['Количество комнат', row => esc(row.rooms)],
+      ['Площадь', row => esc(row.area) + ' м²'],
+      ['Этаж', row => esc(row.apartment_floor ?? row.floor)],
+      ['Этажность дома', row => esc(row.building_floors)],
+      ['Рейтинг', row => row.rating == null ? 'Нет оценки' : esc(row.rating) + ' / 100'],
+      ['Район', row => esc(row.district ?? row.area_name)],
+      ['Адрес', row => esc(row.address)]
+    ];
+    host.innerHTML = '<div class="compare-table-wrap"><table class="compare-table"><thead><tr><th>Характеристика</th>' +
+      items.map((row, i) => '<th>Вариант ' + (i + 1) + '<br>' + esc(row.title || row.id || 'Квартира') + '</th>').join('') +
+      '</tr></thead><tbody>' + fields.map(([label, render]) => '<tr><th>' + label + '</th>' + items.map(row => '<td>' + render(row) + '</td>').join('') + '</tr>').join('') +
+      '</tbody></table></div>';
+  })();
+  </script>
+</body>
+</html>

@@ -618,3 +618,19 @@
   top: 50%;
   transform: translateY(-50%);
 }
+
+
+/* Контрастная панель сравнения: читаемый текст и заметная кнопка. */
+#main .recommendation-compare-bar {
+  background: #1b2430 !important;
+  color: #e6edf7 !important;
+  border: 1px solid #42536a !important;
+}
+#main .recommendation-compare-bar > span,
+#main .recommendation-compare-bar strong { color: #e6edf7 !important; }
+#main .recommendation-compare-bar #recommendation-compare-open {
+  background: #dce9f8 !important; color: #1d2b3c !important; border-color: #a9c8ed !important;
+}
+#main .recommendation-compare-bar #recommendation-compare-open:hover:not(:disabled) {
+  background: #ffffff !important; color: #152233 !important;
+}

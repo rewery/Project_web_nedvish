@@ -42,11 +42,27 @@
     price: 'unspecified', area: 'unspecified', building_condition: 'unspecified', metro: 'unspecified', kindergarten: 'unspecified', school: 'unspecified', city_center: 'unspecified'
   };
 
-  // Подставляем уже согласованный с пользователем профиль при первом открытии.
-  Object.entries(initialProfile).forEach(([name, value]) => {
-    const input = form.querySelector(`input[name="${name}"][value="${value}"]`);
+  // Восстанавливаем весь профиль, включая бюджет и площадь, после возврата со страницы сравнения.
+  let savedProfile = null;
+  try {
+    const rawProfile = sessionStorage.getItem('recommendation_priorities');
+    savedProfile = rawProfile ? JSON.parse(rawProfile) : null;
+  } catch (_) { savedProfile = null; }
+
+  Object.entries(initialProfile).forEach(([name, defaultValue]) => {
+    const savedLevel = savedProfile?.priorities?.[name]?.level || defaultValue;
+    const input = form.querySelector(`input[name="${name}"][value="${savedLevel}"]`)
+      || form.querySelector(`input[name="${name}"][value="${defaultValue}"]`);
     if (input) input.checked = true;
   });
+  const savedMinPrice = savedProfile?.budget?.min_price;
+  const savedMaxPrice = savedProfile?.budget?.max_price;
+  const minPriceInput = form.querySelector('[name="min_price"]');
+  const maxPriceInput = form.querySelector('[name="max_price"]');
+  const areaInput = form.querySelector('[name="target_area"]');
+  if (minPriceInput && savedMinPrice != null) minPriceInput.value = formatThousands(savedMinPrice);
+  if (maxPriceInput && savedMaxPrice != null) maxPriceInput.value = formatThousands(savedMaxPrice);
+  if (areaInput && savedProfile?.target_area != null) areaInput.value = savedProfile.target_area;
 
   function renderPrioritySummary() {
     if (!summaryBody) return;
@@ -109,6 +125,8 @@
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Не удалось рассчитать рекомендации.');
       renderRecommendationResults(data);
+      // Результаты тоже сохраняются: при повторном открытии страницы не нужно запускать подбор заново.
+      try { sessionStorage.setItem('recommendation_results', JSON.stringify(data)); } catch (_) {}
       if (status) status.textContent = `Подбор завершён. Найдено квартир: ${data.count}; исключено по бюджету: ${data.rejected_by_budget ?? 0}.`;
     } catch (error) {
       if (status) status.textContent = `Профиль сохранён, но расчёт не выполнен: ${error.message}`;
@@ -203,7 +221,14 @@
   function escapeHtml(value) { return String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char])); }
 
   form.addEventListener('reset', () => {
-    window.setTimeout(() => { result.classList.remove('is-visible'); renderPrioritySummary(); }, 0);
+    window.setTimeout(() => {
+      result.classList.remove('is-visible');
+      renderPrioritySummary();
+      try {
+        sessionStorage.removeItem('recommendation_priorities');
+        sessionStorage.removeItem('recommendation_results');
+      } catch (_) {}
+    }, 0);
   });
 
   // Публичный метод для интеграции с другими frontend-модулями.
@@ -219,6 +244,20 @@
     const savedListings = sessionStorage.getItem('recommendation_imported_listings');
     importedListings = savedListings ? JSON.parse(savedListings) : null;
   } catch (_) { importedListings = null; }
+  // Восстанавливаем результаты подбора и показываем сводную таблицу при повторной загрузке страницы.
+  if (savedProfile) renderPrioritySummary();
+  try {
+    const savedResults = sessionStorage.getItem('recommendation_results');
+    if (savedResults) {
+      const parsedResults = JSON.parse(savedResults);
+      if (parsedResults && Array.isArray(parsedResults.results)) {
+        result.classList.add('is-visible');
+        renderRecommendationResults(parsedResults);
+        if (status) status.textContent = `Подбор завершён. Найдено квартир: ${parsedResults.count ?? parsedResults.results.length}; исключено по бюджету: ${parsedResults.rejected_by_budget ?? 0}.`;
+      }
+    }
+  } catch (_) {}
+
   if (uploadButton && fileInput) {
     uploadButton.addEventListener('click', async () => {
       const file = fileInput.files && fileInput.files[0];

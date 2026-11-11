@@ -128,7 +128,7 @@
       seenListings.add(identity);
       return true;
     });
-    const shortlist = uniqueRows.slice(0, 10);
+    const shortlist = uniqueRows.slice(0, 6);
     if (!shortlist.length) {
       target.innerHTML = '<p class="recommendation-empty">По заданным условиям квартир не найдено. Попробуйте изменить бюджет или приоритеты.</p>';
       return;
@@ -163,7 +163,7 @@
     const details = row => {
       const scores = Array.isArray(row.criterion_details) ? row.criterion_details : [];
       const missing = Array.isArray(row.missing_criteria) ? row.missing_criteria : [];
-      if (!scores.length && !missing.length) return '<p class="recommendation-note">Подробная разбивка для этой квартиры пока недоступна.</p>';
+      if (!scores.length && !missing.length) return '<div class="recommendation-analysis"><h4>Почему квартира в подборке</h4><p class="recommendation-note">Недостаточно характеристик объявления, чтобы подробно объяснить оценку. Квартира оставлена в подборке по общему результату расчёта.</p></div>';
       const scoreRows = scores.map(item => '<tr><th>'+safe(item.label || labels[item.criterion] || item.criterion)+'</th><td>'+number(item.score)+'/100</td><td>Учтено</td></tr>').join('');
       const missingRows = missing.map(label => '<tr><th>'+safe(label)+'</th><td>—</td><td>Нет данных</td></tr>').join('');
       return '<div class="recommendation-analysis"><h4>Почему квартира в подборке</h4><p>'+safe(row.explanation || 'Оценка рассчитана по доступным приоритетам.')+'</p><div class="recommendation-table-wrap"><table class="recommendation-analysis-table"><thead><tr><th>Критерий</th><th>Оценка</th><th>Статус</th></tr></thead><tbody>'+scoreRows+missingRows+'</tbody></table></div></div>';
@@ -171,13 +171,13 @@
 
     const render = mode => {
       const rows = sorted(mode);
-      target.innerHTML = '<div class="recommendation-toolbar"><div><h3>Результаты подбора</h3><p>10 лучших вариантов. Сортировка меняет порядок, но не пересчитывает рейтинг.</p></div><label class="recommendation-sort">Сортировать <select id="recommendation-sort">'+Object.entries(sortLabels).map(([v,l])=>'<option value="'+v+'" '+(v===mode?'selected':'')+'>'+l+'</option>').join('')+'</select></label></div>'+
+      target.innerHTML = '<div class="recommendation-toolbar"><div><h3>Результаты подбора</h3><p>6 лучших вариантов. Сортировка меняет порядок, но не пересчитывает рейтинг.</p></div><label class="recommendation-sort">Сортировать <select id="recommendation-sort">'+Object.entries(sortLabels).map(([v,l])=>'<option value="'+v+'" '+(v===mode?'selected':'')+'>'+l+'</option>').join('')+'</select></label></div>'+
         '<div class="recommendation-compare-bar"><span>Для сравнения: <strong id="recommendation-compare-count">'+selected.size+'</strong> / 3</span><button type="button" id="recommendation-compare-open" '+(selected.size<2?'disabled':'')+'>Сравнить</button></div>'+
         '<div class="recommendation-grid">'+rows.map(({row,index})=>{
           const score=row.rating==null?'Нет оценки':number(row.rating)+' / 100';
           const scoreClass=row.rating==null?'is-unrated':row.rating>=80?'is-high':row.rating>=60?'is-medium':'is-low';
           const warning=row.market_analysis?.warning?.label;
-          return '<article class="recommendation-card"><div class="recommendation-card__visual"><span class="recommendation-card__number">Вариант '+(index+1)+'</span><span class="recommendation-card__score '+scoreClass+'">'+score+'</span><div class="recommendation-card__visual-caption">Подбор недвижимости</div></div><div class="recommendation-card__body"><h4>'+safe(row.title || row.id || 'Квартира')+'</h4><div class="recommendation-card__price">'+number(row.price)+' ₽</div><div class="recommendation-card__facts"><span>'+safe(row.rooms ?? '—')+' комн.</span><span>'+number(row.area)+' м²</span><span>Этаж '+safe(floor(row) ?? '—')+(row.building_floors?' / '+safe(row.building_floors):'')+'</span></div>'+(warning?'<p class="recommendation-warning">'+safe(warning)+'</p>':'')+'<label class="recommendation-compare-check"><input type="checkbox" data-compare="'+safe(keyOf(row,index))+'" '+(selected.has(keyOf(row,index))?'checked':'')+'> Добавить к сравнению</label>'+(index<5?details(row):'')+'</div></article>';
+          return '<article class="recommendation-card"><div class="recommendation-card__visual"><span class="recommendation-card__number">Вариант '+(index+1)+'</span><span class="recommendation-card__score '+scoreClass+'">'+score+'</span><div class="recommendation-card__visual-caption">Подбор недвижимости</div></div><div class="recommendation-card__body"><h4>'+safe(row.title || row.id || 'Квартира')+'</h4><div class="recommendation-card__price">'+number(row.price)+' ₽</div><div class="recommendation-card__facts"><span>'+safe(row.rooms ?? '—')+' комн.</span><span>'+number(row.area)+' м²</span><span>Этаж '+safe(floor(row) ?? '—')+(row.building_floors?' / '+safe(row.building_floors):'')+'</span></div>'+(warning?'<p class="recommendation-warning">'+safe(warning)+'</p>':'')+'<label class="recommendation-compare-check"><input type="checkbox" data-compare="'+safe(keyOf(row,index))+'" '+(selected.has(keyOf(row,index))?'checked':'')+'> Добавить к сравнению</label>' +details(row)+'</div></article>';
         }).join('')+'</div><div id="recommendation-comparison"></div>';
       target.querySelector('#recommendation-sort')?.addEventListener('change',event=>render(event.target.value));
       target.querySelectorAll('[data-compare]').forEach(input=>input.addEventListener('change',()=>{

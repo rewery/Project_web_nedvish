@@ -634,3 +634,57 @@
 #main .recommendation-compare-bar #recommendation-compare-open:hover:not(:disabled) {
   background: #ffffff !important; color: #152233 !important;
 }
+
+
+/* Широкий формат раздела рекомендаций: отдельный раздел, а не узкая статья сайта. */
+@media (min-width: 761px) {
+  #main article#list {
+    width: min(92vw, 1120px);
+    max-width: calc(100vw - 3rem);
+    padding: 3.25rem 2.25rem 1.75rem;
+  }
+}
+@media (max-width: 760px) {
+  #main article#list {
+    width: 100%;
+    padding: 3rem 1.25rem .75rem;
+  }
+}
+
+/* Компактная сетка настроек приоритетов. */
+#priority-form .priority-setup__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .65rem;
+}
+#priority-form .priority-setup__item {
+  padding: .75rem .85rem;
+  border-radius: 10px;
+}
+#priority-form .priority-setup__hint {
+  margin: .1rem 0 .5rem;
+  font-size: .72rem;
+}
+#priority-form .priority-setup__options { gap: .3rem; }
+#priority-form .priority-setup__option span {
+  padding: .34rem .48rem;
+  font-size: .67rem;
+}
+@media (max-width: 760px) {
+  #priority-form .priority-setup__grid { grid-template-columns: 1fr; }
+}
+
+/* Объяснение рейтинга раскрывается по запросу, чтобы карточки не были перегружены. */
+.recommendation-analysis { padding-top: .75rem; }
+.recommendation-analysis > summary {
+  color: #c9d8e9;
+  font-size: .82rem;
+  font-weight: 750;
+  cursor: pointer;
+  list-style-position: inside;
+}
+.recommendation-analysis[open] > summary { margin-bottom: .65rem; }
+.recommendation-analysis > summary:focus-visible {
+  outline: 2px solid #a9c8ed;
+  outline-offset: 4px;
+  border-radius: 4px;
+}

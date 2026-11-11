@@ -9,6 +9,7 @@ from statistics import median
 from typing import Any
 
 PRICE_WARNING_THRESHOLD = 40.0
+PRICE_SCORE_SLOPE = 1.25  # 40% дешевле рынка = 100; 40% дороже = 0.
 AREA_FULL_SCORE_TOLERANCE = 5.0
 AREA_POINTS_PER_EXTRA_SQM = 5.0
 
@@ -85,6 +86,22 @@ def building_condition_score(value: Any) -> float | None:
     return scores.get(normalized)
 
 
+def price_score_from_market_deviation(deviation_percent: Any) -> float | None:
+    """Переводит отклонение от рыночной цены в балл 0–100.
+
+    Чем ниже цена относительно сопоставимых объектов, тем выше балл.
+    При -40% и ниже балл ограничивается 100, при +40% и выше — 0.
+    Если рыночное отклонение неизвестно, балл не выдумывается.
+    """
+    try:
+        deviation = float(deviation_percent)
+    except (TypeError, ValueError):
+        return None
+    if not (-float("inf") < deviation < float("inf")):
+        return None
+    return round(max(0.0, min(100.0, 50.0 - deviation * PRICE_SCORE_SLOPE)), 1)
+
+
 def estimate_market_price(property_item: dict[str, Any], all_properties: list[dict[str, Any]]) -> dict[str, Any]:
     """Оценивает цену по медиане цены/м² аналогов того же района.
 
@@ -132,7 +149,7 @@ def estimate_market_price(property_item: dict[str, Any], all_properties: list[di
         "deviation_percent": round(deviation, 1),
         "warning": warning,
         "comparable_count": len(peers),
-        "price_score": None,  # Формулу баллов согласуем после тестов на данных.
+        "price_score": price_score_from_market_deviation(deviation),
     }
 
 

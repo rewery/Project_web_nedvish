@@ -1,5 +1,5 @@
 import unittest
-from property_scoring import area_score, filter_by_budget, estimate_market_price, score_listing_features
+from property_scoring import area_score, filter_by_budget, estimate_market_price, score_listing_features, price_score_from_market_deviation
 import json
 from pathlib import Path
 
@@ -36,6 +36,26 @@ class PropertyScoringTests(unittest.TestCase):
         self.assertEqual(estimate_market_price(target, rows)['status'], 'estimated')
         target.pop('district')
         self.assertEqual(estimate_market_price(target, rows)['status'], 'insufficient_data')
+
+
+    def test_market_relative_price_score(self):
+        self.assertEqual(price_score_from_market_deviation(-40), 100)
+        self.assertEqual(price_score_from_market_deviation(-20), 75)
+        self.assertEqual(price_score_from_market_deviation(0), 50)
+        self.assertEqual(price_score_from_market_deviation(20), 25)
+        self.assertEqual(price_score_from_market_deviation(40), 0)
+        self.assertIsNone(price_score_from_market_deviation(None))
+
+    def test_market_analysis_contains_price_score(self):
+        target = {'id': 'a', 'district': 'Центр', 'area': 50, 'rooms': 2, 'price': 4_000_000}
+        rows = [target] + [
+            {'id': str(i), 'district': 'Центр', 'area': 50, 'rooms': 2, 'price': 5_000_000}
+            for i in range(3)
+        ]
+        result = estimate_market_price(target, rows)
+        self.assertEqual(result['status'], 'estimated')
+        self.assertEqual(result['deviation_percent'], -20.0)
+        self.assertEqual(result['price_score'], 75.0)
 
     def test_imports_all_50_sample_apartments(self):
         source = Path(__file__).with_name('demo_apartments_yoshkar_ola.json')

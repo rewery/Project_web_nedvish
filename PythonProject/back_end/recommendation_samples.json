@@ -1,0 +1,42 @@
+{
+  "profile": {
+    "schema_version": 1,
+    "priorities": {
+      "price": {"level": "unspecified", "weight": null},
+      "area": {"level": "unspecified", "weight": null},
+      "price_per_sqm": {"level": "medium", "weight": 2},
+      "building_condition": {"level": "not_important", "weight": 0},
+      "apartment_condition": {"level": "high", "weight": 3},
+      "layout": {"level": "medium", "weight": 2},
+      "location": {"level": "high", "weight": 3}
+    },
+    "location_details": {
+      "metro": {"level": "high", "weight": 3},
+      "schools": {"level": "not_important", "weight": 0},
+      "kindergartens": {"level": "not_important", "weight": 0},
+      "medical": {"level": "medium", "weight": 2},
+      "shops": {"level": "medium", "weight": 2},
+      "parks": {"level": "low", "weight": 1}
+    }
+  },
+  "properties": [
+    {
+      "id": "flat-101",
+      "title": "Квартира 1 — хороший ремонт и метро рядом",
+      "criterion_scores": {"price_per_sqm": 72, "apartment_condition": 95, "layout": 80},
+      "location_scores": {"metro": 95, "schools": 90, "kindergartens": 80, "medical": 70, "shops": 85, "parks": 60}
+    },
+    {
+      "id": "flat-102",
+      "title": "Квартира 2 — просторнее, но дальше от метро",
+      "criterion_scores": {"price_per_sqm": 88, "apartment_condition": 65, "layout": 90},
+      "location_scores": {"metro": 45, "schools": 75, "kindergartens": 75, "medical": 85, "shops": 90, "parks": 85}
+    },
+    {
+      "id": "flat-103",
+      "title": "Квартира 3 — мало данных в объявлении",
+      "criterion_scores": {"apartment_condition": 75},
+      "location_scores": {"metro": 80}
+    }
+  ]
+}

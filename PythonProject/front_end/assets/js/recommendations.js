@@ -242,8 +242,19 @@
   let importedListings = null;
   try {
     const savedListings = sessionStorage.getItem('recommendation_imported_listings');
-    importedListings = savedListings ? JSON.parse(savedListings) : null;
-  } catch (_) { importedListings = null; }
+    const parsedListings = savedListings ? JSON.parse(savedListings) : null;
+    importedListings = Array.isArray(parsedListings) && parsedListings.length ? parsedListings : null;
+    if (savedListings && !importedListings) {
+      sessionStorage.removeItem('recommendation_imported_listings');
+    }
+  } catch (_) {
+    importedListings = null;
+    try { sessionStorage.removeItem('recommendation_imported_listings'); } catch (_) {}
+  }
+  // Показываем, что ранее загруженная TXT-база всё ещё активна после перезагрузки страницы.
+  if (importedListings && importStatus) {
+    importStatus.textContent = `Используется сохранённый TXT-файл. Объявлений: ${importedListings.length}. Чтобы загрузить другой набор, выберите новый файл.`;
+  }
   // Восстанавливаем результаты подбора и показываем сводную таблицу при повторной загрузке страницы.
   if (savedProfile) renderPrioritySummary();
   try {

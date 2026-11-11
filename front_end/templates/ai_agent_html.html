@@ -1,0 +1,83 @@
+<!--<!DOCTYPE html>-->
+<!--    <html lang="en">-->
+<!--    <head>-->
+<!--        <meta charset="utf-8" />-->
+<!--        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />-->
+<!--        <link rel="stylesheet" href="../assets/css/ai_agent_css.css" />-->
+<!--        <noscript><link rel="stylesheet" href="../assets/css/noscript.css" /></noscript>-->
+<!--        <title>AI</title>-->
+<!--    </head>-->
+<!--    <body>-->
+<!--        <div class="parent-container">-->
+
+<!--          &lt;!&ndash; Здесь содержимое чата &ndash;&gt;-->
+<!--          <div class="messages">-->
+<!--            Сообщения пользователя и бота-->
+<!--          </div>-->
+
+<!--          &lt;!&ndash; Поле ввода &ndash;&gt;-->
+<!--          <div class="chat-container">-->
+<!--            <textarea-->
+<!--              id="message"-->
+<!--              placeholder="Спросите что-нибудь..."-->
+<!--              rows="1"-->
+<!--            ></textarea>-->
+
+<!--            <button class="send" type="button" onclick="sendMessage()">-->
+<!--              ↑-->
+<!--            </button>-->
+<!--          </div>-->
+
+<!--        </div>-->
+
+<!--        <script src="../assets/js/ai_agent_js.js"></script>-->
+<!--    </body>-->
+<!--</html>-->
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Homer — ИИ-помощник</title>
+
+    <link rel="stylesheet" href="/assets/css/ai_agent_css.css">
+</head>
+
+<body>
+    <div class="parent-container">
+
+        <button
+            class="theme-toggle"
+            id="themeToggle"
+            type="button"
+            aria-label="Переключить тему"
+        >
+        🌙
+        </button>
+
+        <div class="messages" aria-live="polite">
+        </div>
+
+        <div class="chat-container">
+            <textarea
+                id="message"
+                placeholder="Расскажите, какую квартиру ищете..."
+                rows="1"
+                aria-label="Сообщение помощнику"
+            ></textarea>
+
+            <button class="send" type="button"
+                    onclick="sendMessage()"
+                    aria-label="Отправить сообщение">
+                ↑
+            </button>
+        </div>
+
+    </div>
+
+    <script src="/assets/js/ai_agent_js.js"></script>
+</body>
+</html>

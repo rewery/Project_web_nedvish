@@ -603,3 +603,18 @@
   .recommendation-card:hover,
   .recommendation-compare-check:hover { transform: none; }
 }
+
+
+/* Точное центрирование подписи: чекбокс не смещает текст вправо. */
+.recommendation-compare-check {
+  position: relative;
+  display: block;
+  padding: .85rem 2.8rem;
+  text-align: center;
+}
+.recommendation-compare-check input {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+}

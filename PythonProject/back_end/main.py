@@ -91,8 +91,9 @@ def recommendations_evaluate():
             row = dict(item)
             row['criterion_scores'] = score_listing_features(row, profile)
             row['market_analysis'] = estimate_market_price(row, filtered)
-            # Рыночная оценка и предупреждения доступны, но ценовой балл пока
-            # намеренно не включён до калибровки на реальных данных.
+            price_score = row['market_analysis'].get('price_score')
+            if price_score is not None:
+                row['criterion_scores']['price'] = price_score
             enriched.append(row)
         ranked = rank_properties(profile, enriched)
         by_id = {row.get('id'): row for row in enriched}
@@ -106,8 +107,8 @@ def recommendations_evaluate():
             "results": ranked,
             "count": len(ranked),
             "rejected_by_budget": rejected,
-            "price_scoring_status": "pending_calibration",
-            "note": "Ценовой балл пока не влияет на рейтинг; для рыночной оценки нужны аналоги с указанным районом."
+            "price_scoring_status": "market_relative_when_comparable_data_exists",
+            "note": "Ценовой балл рассчитывается только при наличии минимум трёх сопоставимых квартир того же района; иначе критерий не учитывается."
         })
     except (AttributeError, TypeError, ValueError) as exc:
         return jsonify({"error": "Не удалось обработать входные данные.", "details": str(exc)}), 400
@@ -136,6 +137,9 @@ def recommendations_evaluate_demo():
             row = dict(item)
             row['criterion_scores'] = score_listing_features(row, profile)
             row['market_analysis'] = estimate_market_price(row, filtered)
+            price_score = row['market_analysis'].get('price_score')
+            if price_score is not None:
+                row['criterion_scores']['price'] = price_score
             enriched.append(row)
         ranked = rank_properties(profile, enriched)
         by_id = {row.get('id'): row for row in enriched}
@@ -144,7 +148,7 @@ def recommendations_evaluate_demo():
             for field in ('price', 'area', 'rooms', 'market_analysis'):
                 result[field] = source.get(field)
         return jsonify({"results": ranked, "count": len(ranked), "rejected_by_budget": rejected,
-                        "price_scoring_status": "pending_calibration"})
+                        "price_scoring_status": "market_relative_when_comparable_data_exists"})
     except (OSError, ValueError, TypeError) as exc:
         return jsonify({"error": "Не удалось загрузить демонстрационную базу.", "details": str(exc)}), 500
 

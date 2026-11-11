@@ -21,7 +21,6 @@
     high: 'Высокий'
   };
   const result = document.getElementById('priority-result');
-  const output = document.getElementById('priority-json');
   const scoreMap = { unspecified: 0, not_important: 0, low: 1, medium: 2, high: 3 };
   const status = document.getElementById('priority-status');
   const recommendationsOutput = document.getElementById('recommendation-results');
@@ -97,7 +96,6 @@
     if (!activePriorities) { alert('Выберите хотя бы один приоритет: сейчас все критерии имеют нулевой вес.'); return; }
     const json = JSON.stringify(profile, null, 2);
     try { sessionStorage.setItem('recommendation_priorities', json); } catch (_) {}
-    output.textContent = json;
     result.classList.add('is-visible');
     if (status) status.textContent = 'Рассчитываем подбор по демонстрационной базе…';
     if (recommendationsOutput) recommendationsOutput.innerHTML = '';
@@ -118,7 +116,19 @@
 
   function renderRecommendationResults(data, target = recommendationsOutput) {
     if (!target) return;
-    const shortlist = Array.isArray(data.results) ? data.results.slice(0, 10) : [];
+    // Убираем повторно пришедшие объявления до построения карточек.
+    const sourceRows = Array.isArray(data.results) ? data.results : [];
+    const seenListings = new Set();
+    const uniqueRows = sourceRows.filter(row => {
+      const identity = row.id != null && String(row.id).trim()
+        ? 'id:' + String(row.id).trim()
+        : [row.title, row.price, row.area, row.rooms, row.apartment_floor ?? row.floor]
+            .map(value => String(value ?? '').trim().toLocaleLowerCase('ru-RU')).join('|');
+      if (seenListings.has(identity)) return false;
+      seenListings.add(identity);
+      return true;
+    });
+    const shortlist = uniqueRows.slice(0, 10);
     if (!shortlist.length) {
       target.innerHTML = '<p class="recommendation-empty">По заданным условиям квартир не найдено. Попробуйте изменить бюджет или приоритеты.</p>';
       return;
@@ -178,10 +188,13 @@
       }));
       target.querySelector('#recommendation-compare-open')?.addEventListener('click',()=>{
         const chosen=rows.filter(({row,index})=>selected.has(keyOf(row,index))).map(x=>x.row);
-        const fields=[['Цена','price',' ₽'],['Комнаты','rooms',''],['Площадь','area',' м²'],['Этаж','apartment_floor','']];
-        const value=(row,key)=>number(row[key] ?? (key==='apartment_floor'?row.floor:null));
-        const table='<div class="recommendation-comparison"><h4>Сравнение квартир</h4><div class="recommendation-table-wrap"><table class="recommendation-analysis-table"><thead><tr><th>Параметр</th>'+chosen.map(row=>'<th>'+safe(row.title || row.id || 'Квартира')+'</th>').join('')+'</tr></thead><tbody>'+fields.map(([label,key,unit])=>'<tr><th>'+label+'</th>'+chosen.map(row=>'<td>'+value(row,key)+unit+'</td>').join('')+'</tr>').join('')+'<tr><th>Рейтинг</th>'+chosen.map(row=>'<td>'+number(row.rating)+'/100</td>').join('')+'</tr></tbody></table></div></div>';
-        const slot=target.querySelector('#recommendation-comparison'); if(slot) slot.innerHTML=table;
+        if (chosen.length < 2) return;
+        try {
+          sessionStorage.setItem('recommendation_comparison_items', JSON.stringify(chosen));
+          window.location.href = 'compare.html';
+        } catch (_) {
+          if (status) status.textContent = 'Не удалось открыть сравнение. Попробуйте ещё раз.';
+        }
       });
     };
     render('relevance');

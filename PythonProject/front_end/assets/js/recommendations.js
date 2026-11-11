@@ -215,6 +215,10 @@
   const importStatus = document.getElementById('custom-data-status');
   const importPreview = document.getElementById('custom-data-preview');
   let importedListings = null;
+  try {
+    const savedListings = sessionStorage.getItem('recommendation_imported_listings');
+    importedListings = savedListings ? JSON.parse(savedListings) : null;
+  } catch (_) { importedListings = null; }
   if (uploadButton && fileInput) {
     uploadButton.addEventListener('click', async () => {
       const file = fileInput.files && fileInput.files[0];
@@ -231,11 +235,13 @@
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Не удалось обработать файл.');
         importedListings = data.results;
+        try { sessionStorage.setItem('recommendation_imported_listings', JSON.stringify(importedListings)); } catch (_) {}
         const errors = data.errors || [];
         importStatus.textContent = `Файл загружен и сохранён для подбора. Распознано объявлений: ${data.count}; пропущено блоков: ${errors.length}. Теперь нажмите «Продолжаем», чтобы увидеть результаты.`;
         if (importPreview) { importPreview.hidden = true; importPreview.innerHTML = ''; }
       } catch (error) {
         importedListings = null;
+        try { sessionStorage.removeItem('recommendation_imported_listings'); } catch (_) {}
         importPreview.hidden = true;
         importStatus.textContent = error.message;
       } finally { uploadButton.disabled = false; }

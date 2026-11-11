@@ -410,3 +410,196 @@
   background: rgba(255,255,255,.055);
   border-radius: 1rem;
 }
+
+
+/* Финальная полировка интерфейса результатов: заметные действия и удобные зоны нажатия */
+.recommendation-card {
+  border-color: rgba(160, 184, 214, .18);
+  background: linear-gradient(160deg, #202936 0%, #19212c 100%);
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.recommendation-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(174, 202, 237, .42);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, .24);
+}
+#main article.recommendation-card:hover { transform: translateY(-3px); }
+.recommendation-card__visual {
+  min-height: 132px;
+  background: linear-gradient(125deg, #344b61 0%, #343e56 56%, #5a4a43 100%);
+}
+.recommendation-card__score {
+  border: 1px solid rgba(255,255,255,.16);
+  padding: .42rem .72rem;
+  backdrop-filter: blur(8px);
+}
+.recommendation-card__body { padding: 1.15rem; }
+.recommendation-card__body h4 {
+  color: #f2f5fa;
+  font-size: 1.08rem;
+  line-height: 1.35;
+}
+.recommendation-card__price {
+  color: #fff;
+  font-size: 1.55rem;
+  font-weight: 800;
+}
+.recommendation-card__facts { gap: .5rem; }
+.recommendation-card__facts span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: .28rem .58rem;
+  border: 1px solid rgba(180, 198, 220, .14);
+  border-radius: 7px;
+  background: rgba(255,255,255,.045);
+  color: #c2ccda;
+  font-size: .76rem;
+}
+
+/* Вся плашка — удобная кликабельная зона, а не мелкая подпись */
+.recommendation-compare-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .65rem;
+  width: 100%;
+  min-height: 46px;
+  margin: 1rem 0 .15rem;
+  padding: .7rem 1rem;
+  border: 1px solid #60758e;
+  border-radius: 10px;
+  background: #29384a;
+  color: #e6effa;
+  font-size: .82rem;
+  font-weight: 750;
+  line-height: 1.3;
+  text-align: center;
+  cursor: pointer;
+  transition: background .16s ease, border-color .16s ease, transform .16s ease;
+}
+.recommendation-compare-check:hover {
+  border-color: #b5cce8;
+  background: #344a63;
+  transform: translateY(-1px);
+}
+.recommendation-compare-check input {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  accent-color: #a9c8ed;
+  cursor: pointer;
+}
+.recommendation-compare-check:has(input:checked) {
+  border-color: #9fc5ed;
+  background: #304a64;
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(159,197,237,.3);
+}
+.recommendation-compare-check:focus-within {
+  outline: 2px solid #a9c8ed;
+  outline-offset: 3px;
+}
+.recommendation-compare-bar {
+  padding: .9rem 1rem;
+  border-color: #344356;
+  background: #1b2430;
+  color: #cbd5e2;
+}
+.recommendation-compare-bar button,
+#main #recommendation-compare-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 142px;
+  min-height: 42px;
+  padding: .65rem 1.1rem;
+  border: 1px solid #a9c8ed;
+  border-radius: 9px;
+  background: #dce9f8;
+  color: #1d2b3c;
+  font-size: .82rem;
+  font-weight: 800;
+  letter-spacing: .01em;
+  cursor: pointer;
+  transition: background .16s ease, transform .16s ease;
+}
+.recommendation-compare-bar button:hover:not(:disabled),
+#main #recommendation-compare-open:hover:not(:disabled) {
+  background: #fff;
+  transform: translateY(-1px);
+}
+.recommendation-compare-bar button:disabled,
+#main #recommendation-compare-open:disabled {
+  opacity: .38;
+  cursor: not-allowed;
+  transform: none;
+}
+.recommendation-sort {
+  color: #aebacc;
+  font-size: .76rem;
+  font-weight: 700;
+}
+.recommendation-sort select {
+  min-height: 42px;
+  padding: .55rem .75rem;
+  border: 1px solid #3d4b5e;
+  border-radius: 9px;
+  background: #1b2430;
+  color: #edf2f8;
+  font-size: .82rem;
+}
+.recommendation-sort select:focus-visible {
+  outline: 2px solid #a9c8ed;
+  outline-offset: 2px;
+}
+.recommendation-analysis {
+  border-top-color: rgba(180,198,220,.18);
+}
+.recommendation-analysis h4 { color: #e7edf6; }
+.recommendation-analysis-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border: 1px solid rgba(180,198,220,.14);
+  border-radius: 9px;
+}
+.recommendation-analysis-table th,
+.recommendation-analysis-table td {
+  padding: .58rem .62rem;
+  border-bottom: 1px solid rgba(180,198,220,.1);
+}
+.recommendation-analysis-table tr:last-child th,
+.recommendation-analysis-table tr:last-child td { border-bottom: 0; }
+.recommendation-analysis-table thead th {
+  background: rgba(255,255,255,.055);
+  color: #aebdd0;
+}
+.recommendation-comparison {
+  border-color: #42536a;
+  background: #1b2430;
+  box-shadow: 0 12px 28px rgba(0,0,0,.16);
+}
+.recommendation-empty {
+  border: 1px dashed #52647a;
+  background: #1b2430;
+  color: #c6d0dd;
+}
+#custom-data-preview > button {
+  min-height: 44px;
+  padding: .7rem 1.1rem !important;
+  border: 1px solid #a9c8ed !important;
+  border-radius: 9px !important;
+  background: #dce9f8 !important;
+  color: #1d2b3c !important;
+  font-weight: 800 !important;
+}
+#custom-data-status { margin-top: .7rem; color: #b9c7d8; font-size: .84rem; }
+@media (prefers-reduced-motion: reduce) {
+  .recommendation-card,
+  .recommendation-compare-check,
+  .recommendation-compare-bar button { transition: none; }
+  .recommendation-card:hover,
+  .recommendation-compare-check:hover { transform: none; }
+}

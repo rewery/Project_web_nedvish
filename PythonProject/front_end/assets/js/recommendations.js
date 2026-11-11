@@ -246,8 +246,7 @@
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Ошибка расчёта рекомендаций.');
       importStatus.textContent = `Готово: найдено ${data.count} подходящих квартир; исключено по бюджету: ${data.rejected_by_budget}.`;
-      const rows = data.results || [];
-      importPreview.insertAdjacentHTML('beforeend', `<h4>Результаты подбора</h4><ol>${rows.slice(0, 20).map(row => `<li><strong>${row.id || 'Квартира'}</strong> — ${Number(row.price || 0).toLocaleString('ru-RU')} ₽, ${row.area || '—'} м²; итоговая оценка: ${row.rating ?? '—'}/100${row.market_analysis?.warning ? `; ${row.market_analysis.warning.label}` : ''}</li>`).join('')}</ol>`);
+      renderRecommendationResults(data, importPreview);
     } catch (error) { importStatus.textContent = error.message; }
   }
 

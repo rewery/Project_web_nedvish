@@ -396,3 +396,17 @@
   .recommendation-sort { min-width:0; }
   .recommendation-compare-bar { align-items:stretch; flex-direction:column; }
 }
+
+
+/* Карточки квартир тоже используют <article>, поэтому сбрасываем
+   глобальные стили анимации разделов сайта из main.css. */
+#main article.recommendation-card {
+  opacity: 1;
+  transform: none;
+  padding: 0;
+  position: relative;
+  width: auto;
+  max-width: none;
+  background: rgba(255,255,255,.055);
+  border-radius: 1rem;
+}

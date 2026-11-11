@@ -97,18 +97,19 @@
     const json = JSON.stringify(profile, null, 2);
     try { sessionStorage.setItem('recommendation_priorities', json); } catch (_) {}
     result.classList.add('is-visible');
-    if (status) status.textContent = 'Рассчитываем подбор по демонстрационной базе…';
+    if (status) status.textContent = importedListings ? 'Рассчитываем подбор по загруженному TXT-файлу…' : 'Рассчитываем подбор по демонстрационной базе…';
     if (recommendationsOutput) recommendationsOutput.innerHTML = '';
     result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     window.dispatchEvent(new CustomEvent('recommendation:priorities-ready', { detail: { profile } }));
     try {
-      const response = await fetch('/api/recommendations/evaluate-demo', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ profile })
+      const response = await fetch(importedListings ? '/api/recommendations/evaluate' : '/api/recommendations/evaluate-demo', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(importedListings ? { profile, properties: importedListings } : { profile })
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Не удалось рассчитать рекомендации.');
       renderRecommendationResults(data);
-      if (status) status.textContent = `Подбор завершён. Найдено квартир: ${data.count}; исключено по бюджету: ${data.rejected_by_budget}.`;
+      if (status) status.textContent = `Подбор завершён. Найдено квартир: ${data.count}; исключено по бюджету: ${data.rejected_by_budget ?? 0}.`;
     } catch (error) {
       if (status) status.textContent = `Профиль сохранён, но расчёт не выполнен: ${error.message}`;
     }
@@ -231,12 +232,8 @@
         if (!response.ok) throw new Error(data.error || 'Не удалось обработать файл.');
         importedListings = data.results;
         const errors = data.errors || [];
-        importStatus.textContent = `Распознано объявлений: ${data.count}. Пропущено блоков: ${errors.length}.`;
-        importPreview.hidden = false;
-        importPreview.innerHTML = `<p><strong>Предпросмотр:</strong> ${data.results.slice(0, 5).map(row => `${row.id || 'Без номера'} — ${Number(row.price).toLocaleString('ru-RU')} ₽, ${row.area} м²`).join('; ')}</p>` +
-          (errors.length ? `<p>Не распознаны: ${errors.map(row => `блок ${row.block}: ${row.reason}`).join('; ')}</p>` : '') +
-          '<button type="button" id="custom-data-run" class="priority-setup__continue">Подобрать квартиры из этого файла</button>';
-        document.getElementById('custom-data-run').addEventListener('click', runImportedRecommendations);
+        importStatus.textContent = `Файл загружен и сохранён для подбора. Распознано объявлений: ${data.count}; пропущено блоков: ${errors.length}. Теперь нажмите «Продолжаем», чтобы увидеть результаты.`;
+        if (importPreview) { importPreview.hidden = true; importPreview.innerHTML = ''; }
       } catch (error) {
         importedListings = null;
         importPreview.hidden = true;
@@ -245,23 +242,6 @@
     });
   }
 
-  async function runImportedRecommendations() {
-    if (!importedListings || !importedListings.length) return;
-    const profile = buildProfile();
-    if (profile.budget.mode !== 'none' && Object.entries(profile.budget).some(([key, value]) => key !== 'mode' && !(value > 0))) { importStatus.textContent = 'Цена должна быть больше нуля.'; return; }
-    if (profile.budget.mode === 'price_range' && profile.budget.max_price < profile.budget.min_price) { importStatus.textContent = 'Значение «До» должно быть не меньше значения «От».'; return; }
-    importStatus.textContent = 'Рассчитываем рекомендации…';
-    try {
-      const response = await fetch('/api/recommendations/evaluate', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile, properties: importedListings })
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Ошибка расчёта рекомендаций.');
-      importStatus.textContent = `Готово: найдено ${data.count} подходящих квартир; исключено по бюджету: ${data.rejected_by_budget}.`;
-      renderRecommendationResults(data, importPreview);
-    } catch (error) { importStatus.textContent = error.message; }
-  }
 
   window.RecommendationPriorities = {
     getCurrent() {

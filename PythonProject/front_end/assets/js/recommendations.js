@@ -182,10 +182,10 @@
     const details = row => {
       const scores = Array.isArray(row.criterion_details) ? row.criterion_details : [];
       const missing = Array.isArray(row.missing_criteria) ? row.missing_criteria : [];
-      if (!scores.length && !missing.length) return '<div class="recommendation-analysis"><h4>Почему квартира в подборке</h4><p class="recommendation-note">Недостаточно характеристик объявления, чтобы подробно объяснить оценку. Квартира оставлена в подборке по общему результату расчёта.</p></div>';
+      if (!scores.length && !missing.length) return '<details class="recommendation-analysis"><summary>Почему квартира в подборке</summary><p class="recommendation-note">Недостаточно характеристик объявления, чтобы подробно объяснить оценку. Квартира оставлена в подборке по общему результату расчёта.</p></details>';
       const scoreRows = scores.map(item => '<tr><th>'+safe(item.label || labels[item.criterion] || item.criterion)+'</th><td>'+number(item.score)+'/100</td><td>Учтено</td></tr>').join('');
       const missingRows = missing.map(label => '<tr><th>'+safe(label)+'</th><td>—</td><td>Нет данных</td></tr>').join('');
-      return '<div class="recommendation-analysis"><h4>Почему квартира в подборке</h4><p>'+safe(row.explanation || 'Оценка рассчитана по доступным приоритетам.')+'</p><div class="recommendation-table-wrap"><table class="recommendation-analysis-table"><thead><tr><th>Критерий</th><th>Оценка</th><th>Статус</th></tr></thead><tbody>'+scoreRows+missingRows+'</tbody></table></div></div>';
+      return '<details class="recommendation-analysis"><summary>Почему квартира в подборке</summary><p>'+safe(row.explanation || 'Оценка рассчитана по доступным приоритетам.')+'</p><div class="recommendation-table-wrap"><table class="recommendation-analysis-table"><thead><tr><th>Критерий</th><th>Оценка</th><th>Статус</th></tr></thead><tbody>'+scoreRows+missingRows+'</tbody></table></div></details>';
     };
 
     const render = mode => {

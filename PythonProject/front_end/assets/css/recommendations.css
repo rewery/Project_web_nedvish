@@ -688,3 +688,123 @@
   outline-offset: 4px;
   border-radius: 4px;
 }
+
+
+/* Компактная полировка блока приоритетов: меньше визуального веса, та же структура и логика. */
+#main article#list > .major {
+  margin-bottom: .85rem;
+}
+@media (min-width: 761px) {
+  #main article#list {
+    padding: 2.75rem 1.6rem 1.25rem;
+  }
+}
+@media (max-width: 760px) {
+  #main article#list {
+    padding: 2.5rem .85rem .75rem;
+  }
+}
+.priority-setup {
+  max-width: 860px;
+  margin: .75rem auto;
+  padding: .95rem;
+  border-radius: 14px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .16);
+}
+.priority-setup__welcome {
+  margin-bottom: .8rem;
+}
+.priority-setup__welcome h3 {
+  font-size: 1.28rem;
+}
+.priority-setup__intro {
+  font-size: .84rem;
+  line-height: 1.45;
+}
+#priority-form > .priority-setup__item {
+  margin-bottom: .65rem !important;
+}
+#priority-form .priority-setup__grid {
+  gap: .55rem;
+}
+#priority-form .priority-setup__item {
+  padding: .62rem .75rem;
+  border-radius: 9px;
+}
+#priority-form .priority-setup__item legend {
+  gap: .45rem;
+  font-size: .82rem;
+}
+#priority-form .priority-setup__icon {
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 7px;
+}
+#priority-form .priority-setup__hint {
+  margin: .08rem 0 .38rem;
+  font-size: .68rem;
+  line-height: 1.35;
+}
+#priority-form .priority-setup__options {
+  gap: .25rem;
+}
+#priority-form .priority-setup__option span {
+  padding: .29rem .42rem;
+  font-size: .66rem;
+  line-height: 1.25;
+}
+#priority-form .priority-setup__item:has(.priority-setup__option input:not([value="unspecified"]):checked) {
+  border-color: #a7bdd8;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .2);
+  background: #202a37;
+}
+#priority-form .budget-fields {
+  gap: .65rem;
+  margin-top: .45rem;
+}
+#priority-form input.priority-numeric-input {
+  height: 2.55rem !important;
+  padding: .55rem .7rem !important;
+  font-size: .86rem !important;
+}
+.priority-summary {
+  margin-top: .8rem;
+  padding: .9rem;
+  border-radius: 11px;
+}
+.priority-summary__heading {
+  gap: .65rem;
+  margin-bottom: .55rem;
+}
+.priority-summary__table th,
+.priority-summary__table td {
+  padding: .55rem .6rem;
+}
+.priority-summary__note {
+  margin-top: .6rem;
+}
+.priority-setup__continue-wrap {
+  margin: .85rem 0 .1rem;
+}
+.priority-setup__continue {
+  min-width: 165px;
+  padding: .7rem 1.2rem !important;
+}
+@media (max-width: 760px) {
+  .priority-setup {
+    padding: .75rem;
+  }
+  #priority-form .priority-setup__grid {
+    grid-template-columns: 1fr;
+  }
+  #priority-form .priority-setup__item {
+    padding: .62rem .68rem;
+  }
+  #priority-form .priority-setup__option span {
+    padding: .3rem .45rem;
+    font-size: .67rem;
+  }
+  .priority-summary {
+    padding: .75rem;
+  }
+}

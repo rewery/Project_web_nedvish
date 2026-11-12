@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Рекомендации — Homer</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/recommendations.css">
+</head>
+<body>
+  <div id="main">
+              <article id="list" class="active">
+                <h2 class="major">Настройка рекомендаций</h2>
+                                <section class="priority-setup" aria-labelledby="priority-title">
+                                    <div class="priority-setup__welcome">
+                                        <span class="priority-setup__eyebrow">ПЕРСОНАЛЬНЫЙ ПОДБОР</span>
+                                        <h3 id="priority-title">Что для вас важнее всего?</h3>
+                                        <p class="priority-setup__intro">Выберите, на что обращать больше внимания при сравнении квартир. Это займёт меньше минуты.</p>
+                                    </div>
+                                    <form id="priority-form">
+                                        <fieldset class="priority-setup__item" style="margin-bottom:1.25rem">
+                                            <legend><span class="priority-setup__icon">₽</span><span>Бюджет на покупку</span></legend>
+                                            <span class="priority-setup__hint">Укажите нижнюю и/или верхнюю границу. Можно заполнить только одно поле.</span>
+                                            <div class="budget-fields">
+                                                <label class="budget-fields__field">От, ₽
+                                                    <input class="priority-numeric-input" type="text" name="min_price" inputmode="numeric" autocomplete="off" placeholder="Например, 6 000 000">
+                                                </label>
+                                                <label class="budget-fields__field">До, ₽
+                                                    <input class="priority-numeric-input" type="text" name="max_price" inputmode="numeric" autocomplete="off" placeholder="Например, 8 000 000">
+                                                </label>
+                                            </div>
+                                        </fieldset>
+                                        <fieldset class="priority-setup__item" style="margin-bottom:1.25rem">
+                                            <legend><span class="priority-setup__icon">↔</span><span>Желаемая площадь</span></legend>
+                                            <span class="priority-setup__hint">Укажите ориентир площади в м². В пределах ±5 м² оценка максимальная.</span>
+                                            <input class="priority-numeric-input priority-area-input" type="number" name="target_area" min="1" step="0.5" inputmode="decimal" placeholder="Например, 45">
+                                        </fieldset>
+                                        <div class="priority-setup__grid">
+                                            <fieldset class="priority-setup__item">
+                                                <legend><span class="priority-setup__icon">₽</span><span>Стоимость квартиры</span></legend>
+                                                <span class="priority-setup__hint">Насколько важна общая цена?</span>
+                                                <div class="priority-setup__options">
+                                                    <label class="priority-setup__option"><input type="radio" name="price" value="unspecified" checked><span>Пока не решил(а)</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="price" value="not_important"><span>Не важно</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="price" value="low"><span>Невысокий</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="price" value="medium"><span>Средний</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="price" value="high"><span>Очень важен</span></label>
+                                                </div>
+                                            </fieldset>
+                                            <fieldset class="priority-setup__item">
+                                                <legend><span class="priority-setup__icon">↔</span><span>Площадь квартиры</span></legend>
+                                                <span class="priority-setup__hint">Насколько важен размер жилья?</span>
+                                                <div class="priority-setup__options">
+                                                    <label class="priority-setup__option"><input type="radio" name="area" value="unspecified" checked><span>Пока не решил(а)</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="area" value="not_important"><span>Не важно</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="area" value="low"><span>Невысокий</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="area" value="medium"><span>Средний</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="area" value="high"><span>Очень важен</span></label>
+                                                </div>
+                                            </fieldset>
+                                            <fieldset class="priority-setup__item">
+                                                <legend><span class="priority-setup__icon">⌂</span><span>Состояние дома</span></legend>
+                                                <span class="priority-setup__hint">Важно ли состояние здания и подъезда?</span>
+                                                <div class="priority-setup__options">
+                                                    <label class="priority-setup__option"><input type="radio" name="building_condition" value="unspecified" checked><span>Пока не решил(а)</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="building_condition" value="not_important"><span>Не важно</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="building_condition" value="low"><span>Невысокий</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="building_condition" value="medium"><span>Средний</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="building_condition" value="high"><span>Очень важен</span></label>
+                                                </div>
+                                            </fieldset>
+                                            <fieldset class="priority-setup__item">
+                                                <legend><span class="priority-setup__icon">M</span><span>Близость к метро</span></legend>
+                                                <span class="priority-setup__hint">Насколько важно быстро добираться до метро?</span>
+                                                <div class="priority-setup__options">
+                                                    <label class="priority-setup__option"><input type="radio" name="metro" value="unspecified" checked><span>Пока не решил(а)</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="metro" value="not_important"><span>Не важно</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="metro" value="low"><span>Невысокий</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="metro" value="medium"><span>Средний</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="metro" value="high"><span>Очень важен</span></label>
+                                                </div>
+                                            </fieldset>
+                                            <fieldset class="priority-setup__item">
+                                                <legend><span class="priority-setup__icon">✳</span><span>Детские сады</span></legend>
+                                                <span class="priority-setup__hint">Важно ли наличие детских садов поблизости?</span>
+                                                <div class="priority-setup__options">
+                                                    <label class="priority-setup__option"><input type="radio" name="kindergarten" value="unspecified" checked><span>Пока не решил(а)</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="kindergarten" value="not_important"><span>Не важно</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="kindergarten" value="low"><span>Невысокий</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="kindergarten" value="medium"><span>Средний</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="kindergarten" value="high"><span>Очень важен</span></label>
+                                                </div>
+                                            </fieldset>
+                                            <fieldset class="priority-setup__item">
+                                                <legend><span class="priority-setup__icon">▤</span><span>Школы</span></legend>
+                                                <span class="priority-setup__hint">Важно ли, чтобы рядом была школа?</span>
+                                                <div class="priority-setup__options">
+                                                    <label class="priority-setup__option"><input type="radio" name="school" value="unspecified" checked><span>Пока не решил(а)</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="school" value="not_important"><span>Не важно</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="school" value="low"><span>Невысокий</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="school" value="medium"><span>Средний</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="school" value="high"><span>Очень важен</span></label>
+                                                </div>
+                                            </fieldset>
+                                            <fieldset class="priority-setup__item">
+                                                <legend><span class="priority-setup__icon">◎</span><span>Близость к центру</span></legend>
+                                                <span class="priority-setup__hint">Насколько важно жить ближе к центру города?</span>
+                                                <div class="priority-setup__options">
+                                                    <label class="priority-setup__option"><input type="radio" name="city_center" value="unspecified" checked><span>Пока не решил(а)</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="city_center" value="not_important"><span>Не важно</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="city_center" value="low"><span>Невысокий</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="city_center" value="medium"><span>Средний</span></label>
+                                                    <label class="priority-setup__option"><input type="radio" name="city_center" value="high"><span>Очень важен</span></label>
+                                                </div>
+                                            </fieldset>
+                                        </div>
+                                    </form>
+                                    <section class="priority-summary" aria-labelledby="custom-data-title" style="margin-top:2rem">
+                                        <div class="priority-summary__heading">
+                                            <div><h3 id="custom-data-title">Проверить свой набор объявлений</h3><p>Загрузите TXT-файл с квартирами — готовый демонстрационный набор при этом останется доступен.</p></div>
+                                        </div>
+                                        <div class="priority-setup__options" style="align-items:center;gap:1rem">
+                                            <label>Город (если не указан в файле) <input id="custom-data-city" type="text" value="Йошкар-Ола" placeholder="Например, Казань"></label>
+                                            <label>Текстовый файл (.txt) — демонстрационный вариант <input id="custom-data-file" type="file" accept=".txt,text/plain"></label>
+                                            <button type="button" id="custom-data-upload" class="priority-setup__continue">Загрузить и сохранить</button>
+                                        </div>
+                                        <p class="priority-setup__hint">Файл используется как демонстрационная база данных для проверки работы механизма рекомендаций. Для каждого объявления желательно указать цену и площадь. Дополнительные поля (комнаты, район, состояние дома, расстояния) будут учтены, если распознаются.</p>
+                                        <div id="custom-data-status" role="status" aria-live="polite"></div>
+                                        <div id="custom-data-preview" hidden></div>
+                                    </section>
+                                    <section class="priority-summary" aria-labelledby="priority-summary-title">
+                                        <div class="priority-summary__heading">
+                                            <div><h3 id="priority-summary-title">Ваш профиль поиска</h3><p>Так мы будем учитывать ваши пожелания при подборе.</p></div>
+                                            <span class="priority-summary__tag">7 критериев на ваш выбор</span>
+                                        </div>
+                                        <div class="priority-summary__table-wrap">
+                                            <table class="priority-summary__table">
+                                                <thead><tr><th scope="col">Что учитываем</th><th scope="col">Ваш выбор</th><th scope="col">Приоритет</th></tr></thead>
+                                                <tbody id="priority-summary-body"></tbody>
+                                            </table>
+                                        </div>
+                                        <p class="priority-summary__note">Можно изменить выбор в любой момент. «Пока не решил(а)» — приоритет ещё не задан. «Не важно» — критерий не будет влиять на персональную оценку.</p>
+                                    </section>
+                                    <div class="priority-setup__continue-wrap">
+                                        <button type="button" id="priority-continue" class="priority-setup__continue">Продолжаем <span aria-hidden="true">→</span></button>
+                                    </div>
+                                    <div id="priority-result" class="priority-setup__result" aria-live="polite"><strong>Результаты подбора</strong><p id="priority-status">Подготавливаем рекомендации…</p><div id="recommendation-results"></div></div>
+                                </section>
+              </article>
+  </div>
+  <script src="../assets/js/jquery.min.js"></script>
+  <script src="../assets/js/recommendations.js"></script>
+  <script>
+    (() => {
+      const notifyHeight = () => {
+        const height = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+        window.parent.postMessage({ type: 'recommendations-frame-height', height }, window.location.origin);
+      };
+      window.addEventListener('load', notifyHeight);
+      new ResizeObserver(notifyHeight).observe(document.body);
+    })();
+  </script>
+</body>
+</html>

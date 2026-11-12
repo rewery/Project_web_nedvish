@@ -20,6 +20,12 @@ def home():
     return send_from_directory(FRONTEND_DIR, 'index.html')
 
 
+@app.route('/compare.html')
+def compare_page():
+    """Отдаёт отдельную страницу сравнения квартир."""
+    return send_from_directory(FRONTEND_DIR, 'compare.html')
+
+
 @app.route('/templates/<path:filename>')
 def page_templates(filename):
     """Отдаёт страницы для iframe (ассистент и карта)."""

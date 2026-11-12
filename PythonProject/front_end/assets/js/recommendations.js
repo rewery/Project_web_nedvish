@@ -21,7 +21,6 @@
     high: 'Высокий'
   };
   const result = document.getElementById('priority-result');
-  const output = document.getElementById('priority-json');
   const scoreMap = { unspecified: 0, not_important: 0, low: 1, medium: 2, high: 3 };
   const status = document.getElementById('priority-status');
   const recommendationsOutput = document.getElementById('recommendation-results');
@@ -43,11 +42,27 @@
     price: 'unspecified', area: 'unspecified', building_condition: 'unspecified', metro: 'unspecified', kindergarten: 'unspecified', school: 'unspecified', city_center: 'unspecified'
   };
 
-  // Подставляем уже согласованный с пользователем профиль при первом открытии.
-  Object.entries(initialProfile).forEach(([name, value]) => {
-    const input = form.querySelector(`input[name="${name}"][value="${value}"]`);
+  // Восстанавливаем весь профиль, включая бюджет и площадь, после возврата со страницы сравнения.
+  let savedProfile = null;
+  try {
+    const rawProfile = sessionStorage.getItem('recommendation_priorities');
+    savedProfile = rawProfile ? JSON.parse(rawProfile) : null;
+  } catch (_) { savedProfile = null; }
+
+  Object.entries(initialProfile).forEach(([name, defaultValue]) => {
+    const savedLevel = savedProfile?.priorities?.[name]?.level || defaultValue;
+    const input = form.querySelector(`input[name="${name}"][value="${savedLevel}"]`)
+      || form.querySelector(`input[name="${name}"][value="${defaultValue}"]`);
     if (input) input.checked = true;
   });
+  const savedMinPrice = savedProfile?.budget?.min_price;
+  const savedMaxPrice = savedProfile?.budget?.max_price;
+  const minPriceInput = form.querySelector('[name="min_price"]');
+  const maxPriceInput = form.querySelector('[name="max_price"]');
+  const areaInput = form.querySelector('[name="target_area"]');
+  if (minPriceInput && savedMinPrice != null) minPriceInput.value = formatThousands(savedMinPrice);
+  if (maxPriceInput && savedMaxPrice != null) maxPriceInput.value = formatThousands(savedMaxPrice);
+  if (areaInput && savedProfile?.target_area != null) areaInput.value = savedProfile.target_area;
 
   function renderPrioritySummary() {
     if (!summaryBody) return;
@@ -97,20 +112,22 @@
     if (!activePriorities) { alert('Выберите хотя бы один приоритет: сейчас все критерии имеют нулевой вес.'); return; }
     const json = JSON.stringify(profile, null, 2);
     try { sessionStorage.setItem('recommendation_priorities', json); } catch (_) {}
-    output.textContent = json;
     result.classList.add('is-visible');
-    if (status) status.textContent = 'Рассчитываем подбор по демонстрационной базе…';
+    if (status) status.textContent = importedListings ? 'Рассчитываем подбор по загруженному TXT-файлу…' : 'Рассчитываем подбор по демонстрационной базе…';
     if (recommendationsOutput) recommendationsOutput.innerHTML = '';
     result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     window.dispatchEvent(new CustomEvent('recommendation:priorities-ready', { detail: { profile } }));
     try {
-      const response = await fetch('/api/recommendations/evaluate-demo', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ profile })
+      const response = await fetch(importedListings ? '/api/recommendations/evaluate' : '/api/recommendations/evaluate-demo', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(importedListings ? { profile, properties: importedListings } : { profile })
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Не удалось рассчитать рекомендации.');
       renderRecommendationResults(data);
-      if (status) status.textContent = `Подбор завершён. Найдено квартир: ${data.count}; исключено по бюджету: ${data.rejected_by_budget}.`;
+      // Результаты тоже сохраняются: при повторном открытии страницы не нужно запускать подбор заново.
+      try { sessionStorage.setItem('recommendation_results', JSON.stringify(data)); } catch (_) {}
+      if (status) status.textContent = `Подбор завершён. Найдено квартир: ${data.count}; исключено по бюджету: ${data.rejected_by_budget ?? 0}.`;
     } catch (error) {
       if (status) status.textContent = `Профиль сохранён, но расчёт не выполнен: ${error.message}`;
     }
@@ -118,7 +135,19 @@
 
   function renderRecommendationResults(data, target = recommendationsOutput) {
     if (!target) return;
-    const shortlist = Array.isArray(data.results) ? data.results.slice(0, 10) : [];
+    // Убираем повторно пришедшие объявления до построения карточек.
+    const sourceRows = Array.isArray(data.results) ? data.results : [];
+    const seenListings = new Set();
+    const uniqueRows = sourceRows.filter(row => {
+      const identity = row.id != null && String(row.id).trim()
+        ? 'id:' + String(row.id).trim()
+        : [row.title, row.price, row.area, row.rooms, row.apartment_floor ?? row.floor]
+            .map(value => String(value ?? '').trim().toLocaleLowerCase('ru-RU')).join('|');
+      if (seenListings.has(identity)) return false;
+      seenListings.add(identity);
+      return true;
+    });
+    const shortlist = uniqueRows.slice(0, 6);
     if (!shortlist.length) {
       target.innerHTML = '<p class="recommendation-empty">По заданным условиям квартир не найдено. Попробуйте изменить бюджет или приоритеты.</p>';
       return;
@@ -153,21 +182,21 @@
     const details = row => {
       const scores = Array.isArray(row.criterion_details) ? row.criterion_details : [];
       const missing = Array.isArray(row.missing_criteria) ? row.missing_criteria : [];
-      if (!scores.length && !missing.length) return '<p class="recommendation-note">Подробная разбивка для этой квартиры пока недоступна.</p>';
+      if (!scores.length && !missing.length) return '<details class="recommendation-analysis"><summary>Почему квартира в подборке</summary><p class="recommendation-note">Недостаточно характеристик объявления, чтобы подробно объяснить оценку. Квартира оставлена в подборке по общему результату расчёта.</p></details>';
       const scoreRows = scores.map(item => '<tr><th>'+safe(item.label || labels[item.criterion] || item.criterion)+'</th><td>'+number(item.score)+'/100</td><td>Учтено</td></tr>').join('');
       const missingRows = missing.map(label => '<tr><th>'+safe(label)+'</th><td>—</td><td>Нет данных</td></tr>').join('');
-      return '<div class="recommendation-analysis"><h4>Почему квартира в подборке</h4><p>'+safe(row.explanation || 'Оценка рассчитана по доступным приоритетам.')+'</p><div class="recommendation-table-wrap"><table class="recommendation-analysis-table"><thead><tr><th>Критерий</th><th>Оценка</th><th>Статус</th></tr></thead><tbody>'+scoreRows+missingRows+'</tbody></table></div></div>';
+      return '<details class="recommendation-analysis"><summary>Почему квартира в подборке</summary><p>'+safe(row.explanation || 'Оценка рассчитана по доступным приоритетам.')+'</p><div class="recommendation-table-wrap"><table class="recommendation-analysis-table"><thead><tr><th>Критерий</th><th>Оценка</th><th>Статус</th></tr></thead><tbody>'+scoreRows+missingRows+'</tbody></table></div></details>';
     };
 
     const render = mode => {
       const rows = sorted(mode);
-      target.innerHTML = '<div class="recommendation-toolbar"><div><h3>Результаты подбора</h3><p>10 лучших вариантов. Сортировка меняет порядок, но не пересчитывает рейтинг.</p></div><label class="recommendation-sort">Сортировать <select id="recommendation-sort">'+Object.entries(sortLabels).map(([v,l])=>'<option value="'+v+'" '+(v===mode?'selected':'')+'>'+l+'</option>').join('')+'</select></label></div>'+
+      target.innerHTML = '<div class="recommendation-toolbar"><div><h3>Результаты подбора</h3><p>6 лучших вариантов. Сортировка меняет порядок, но не пересчитывает рейтинг.</p></div><label class="recommendation-sort">Сортировать <select id="recommendation-sort">'+Object.entries(sortLabels).map(([v,l])=>'<option value="'+v+'" '+(v===mode?'selected':'')+'>'+l+'</option>').join('')+'</select></label></div>'+
         '<div class="recommendation-compare-bar"><span>Для сравнения: <strong id="recommendation-compare-count">'+selected.size+'</strong> / 3</span><button type="button" id="recommendation-compare-open" '+(selected.size<2?'disabled':'')+'>Сравнить</button></div>'+
         '<div class="recommendation-grid">'+rows.map(({row,index})=>{
           const score=row.rating==null?'Нет оценки':number(row.rating)+' / 100';
           const scoreClass=row.rating==null?'is-unrated':row.rating>=80?'is-high':row.rating>=60?'is-medium':'is-low';
           const warning=row.market_analysis?.warning?.label;
-          return '<article class="recommendation-card"><div class="recommendation-card__visual"><span class="recommendation-card__number">Вариант '+(index+1)+'</span><span class="recommendation-card__score '+scoreClass+'">'+score+'</span><div class="recommendation-card__visual-caption">Подбор недвижимости</div></div><div class="recommendation-card__body"><h4>'+safe(row.title || row.id || 'Квартира')+'</h4><div class="recommendation-card__price">'+number(row.price)+' ₽</div><div class="recommendation-card__facts"><span>'+safe(row.rooms ?? '—')+' комн.</span><span>'+number(row.area)+' м²</span><span>Этаж '+safe(floor(row) ?? '—')+(row.building_floors?' / '+safe(row.building_floors):'')+'</span></div>'+(warning?'<p class="recommendation-warning">'+safe(warning)+'</p>':'')+'<label class="recommendation-compare-check"><input type="checkbox" data-compare="'+safe(keyOf(row,index))+'" '+(selected.has(keyOf(row,index))?'checked':'')+'> Добавить к сравнению</label>'+(index<5?details(row):'')+'</div></article>';
+          return '<article class="recommendation-card"><div class="recommendation-card__visual"><span class="recommendation-card__number">Вариант '+(index+1)+'</span><span class="recommendation-card__score '+scoreClass+'">'+score+'</span><div class="recommendation-card__visual-caption">Подбор недвижимости</div></div><div class="recommendation-card__body"><h4>'+safe(row.title || row.id || 'Квартира')+'</h4><div class="recommendation-card__price">'+number(row.price)+' ₽</div><div class="recommendation-card__facts"><span>'+safe(row.rooms ?? '—')+' комн.</span><span>'+number(row.area)+' м²</span><span>Этаж '+safe(floor(row) ?? '—')+(row.building_floors?' / '+safe(row.building_floors):'')+'</span></div>'+(warning?'<p class="recommendation-warning">'+safe(warning)+'</p>':'')+'<label class="recommendation-compare-check"><input type="checkbox" data-compare="'+safe(keyOf(row,index))+'" '+(selected.has(keyOf(row,index))?'checked':'')+'> Добавить к сравнению</label>' +details(row)+'</div></article>';
         }).join('')+'</div><div id="recommendation-comparison"></div>';
       target.querySelector('#recommendation-sort')?.addEventListener('change',event=>render(event.target.value));
       target.querySelectorAll('[data-compare]').forEach(input=>input.addEventListener('change',()=>{
@@ -178,10 +207,13 @@
       }));
       target.querySelector('#recommendation-compare-open')?.addEventListener('click',()=>{
         const chosen=rows.filter(({row,index})=>selected.has(keyOf(row,index))).map(x=>x.row);
-        const fields=[['Цена','price',' ₽'],['Комнаты','rooms',''],['Площадь','area',' м²'],['Этаж','apartment_floor','']];
-        const value=(row,key)=>number(row[key] ?? (key==='apartment_floor'?row.floor:null));
-        const table='<div class="recommendation-comparison"><h4>Сравнение квартир</h4><div class="recommendation-table-wrap"><table class="recommendation-analysis-table"><thead><tr><th>Параметр</th>'+chosen.map(row=>'<th>'+safe(row.title || row.id || 'Квартира')+'</th>').join('')+'</tr></thead><tbody>'+fields.map(([label,key,unit])=>'<tr><th>'+label+'</th>'+chosen.map(row=>'<td>'+value(row,key)+unit+'</td>').join('')+'</tr>').join('')+'<tr><th>Рейтинг</th>'+chosen.map(row=>'<td>'+number(row.rating)+'/100</td>').join('')+'</tr></tbody></table></div></div>';
-        const slot=target.querySelector('#recommendation-comparison'); if(slot) slot.innerHTML=table;
+        if (chosen.length < 2) return;
+        try {
+          sessionStorage.setItem('recommendation_comparison_items', JSON.stringify(chosen));
+          window.location.href = 'compare.html';
+        } catch (_) {
+          if (status) status.textContent = 'Не удалось открыть сравнение. Попробуйте ещё раз.';
+        }
       });
     };
     render('relevance');
@@ -189,7 +221,14 @@
   function escapeHtml(value) { return String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char])); }
 
   form.addEventListener('reset', () => {
-    window.setTimeout(() => { result.classList.remove('is-visible'); renderPrioritySummary(); }, 0);
+    window.setTimeout(() => {
+      result.classList.remove('is-visible');
+      renderPrioritySummary();
+      try {
+        sessionStorage.removeItem('recommendation_priorities');
+        sessionStorage.removeItem('recommendation_results');
+      } catch (_) {}
+    }, 0);
   });
 
   // Публичный метод для интеграции с другими frontend-модулями.
@@ -201,6 +240,35 @@
   const importStatus = document.getElementById('custom-data-status');
   const importPreview = document.getElementById('custom-data-preview');
   let importedListings = null;
+  try {
+    const savedListings = sessionStorage.getItem('recommendation_imported_listings');
+    const parsedListings = savedListings ? JSON.parse(savedListings) : null;
+    importedListings = Array.isArray(parsedListings) && parsedListings.length ? parsedListings : null;
+    if (savedListings && !importedListings) {
+      sessionStorage.removeItem('recommendation_imported_listings');
+    }
+  } catch (_) {
+    importedListings = null;
+    try { sessionStorage.removeItem('recommendation_imported_listings'); } catch (_) {}
+  }
+  // Показываем, что ранее загруженная TXT-база всё ещё активна после перезагрузки страницы.
+  if (importedListings && importStatus) {
+    importStatus.textContent = `Используется сохранённый TXT-файл. Объявлений: ${importedListings.length}. Чтобы загрузить другой набор, выберите новый файл.`;
+  }
+  // Восстанавливаем результаты подбора и показываем сводную таблицу при повторной загрузке страницы.
+  if (savedProfile) renderPrioritySummary();
+  try {
+    const savedResults = sessionStorage.getItem('recommendation_results');
+    if (savedResults) {
+      const parsedResults = JSON.parse(savedResults);
+      if (parsedResults && Array.isArray(parsedResults.results)) {
+        result.classList.add('is-visible');
+        renderRecommendationResults(parsedResults);
+        if (status) status.textContent = `Подбор завершён. Найдено квартир: ${parsedResults.count ?? parsedResults.results.length}; исключено по бюджету: ${parsedResults.rejected_by_budget ?? 0}.`;
+      }
+    }
+  } catch (_) {}
+
   if (uploadButton && fileInput) {
     uploadButton.addEventListener('click', async () => {
       const file = fileInput.files && fileInput.files[0];
@@ -217,38 +285,19 @@
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Не удалось обработать файл.');
         importedListings = data.results;
+        try { sessionStorage.setItem('recommendation_imported_listings', JSON.stringify(importedListings)); } catch (_) {}
         const errors = data.errors || [];
-        importStatus.textContent = `Распознано объявлений: ${data.count}. Пропущено блоков: ${errors.length}.`;
-        importPreview.hidden = false;
-        importPreview.innerHTML = `<p><strong>Предпросмотр:</strong> ${data.results.slice(0, 5).map(row => `${row.id || 'Без номера'} — ${Number(row.price).toLocaleString('ru-RU')} ₽, ${row.area} м²`).join('; ')}</p>` +
-          (errors.length ? `<p>Не распознаны: ${errors.map(row => `блок ${row.block}: ${row.reason}`).join('; ')}</p>` : '') +
-          '<button type="button" id="custom-data-run" class="priority-setup__continue">Подобрать квартиры из этого файла</button>';
-        document.getElementById('custom-data-run').addEventListener('click', runImportedRecommendations);
+        importStatus.textContent = `Файл загружен и сохранён для подбора. Распознано объявлений: ${data.count}; пропущено блоков: ${errors.length}. Теперь нажмите «Продолжаем», чтобы увидеть результаты.`;
+        if (importPreview) { importPreview.hidden = true; importPreview.innerHTML = ''; }
       } catch (error) {
         importedListings = null;
+        try { sessionStorage.removeItem('recommendation_imported_listings'); } catch (_) {}
         importPreview.hidden = true;
         importStatus.textContent = error.message;
       } finally { uploadButton.disabled = false; }
     });
   }
 
-  async function runImportedRecommendations() {
-    if (!importedListings || !importedListings.length) return;
-    const profile = buildProfile();
-    if (profile.budget.mode !== 'none' && Object.entries(profile.budget).some(([key, value]) => key !== 'mode' && !(value > 0))) { importStatus.textContent = 'Цена должна быть больше нуля.'; return; }
-    if (profile.budget.mode === 'price_range' && profile.budget.max_price < profile.budget.min_price) { importStatus.textContent = 'Значение «До» должно быть не меньше значения «От».'; return; }
-    importStatus.textContent = 'Рассчитываем рекомендации…';
-    try {
-      const response = await fetch('/api/recommendations/evaluate', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile, properties: importedListings })
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Ошибка расчёта рекомендаций.');
-      importStatus.textContent = `Готово: найдено ${data.count} подходящих квартир; исключено по бюджету: ${data.rejected_by_budget}.`;
-      renderRecommendationResults(data, importPreview);
-    } catch (error) { importStatus.textContent = error.message; }
-  }
 
   window.RecommendationPriorities = {
     getCurrent() {

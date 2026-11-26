@@ -1,0 +1,19 @@
+name: Listing importer tests
+
+on:
+  push:
+    branches: [main, feature/real-listing-import]
+  pull_request:
+    branches: [main]
+
+jobs:
+  parser-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install "requests>=2.31,<3.0"
+      - run: python -m unittest test_real_listing_import.py -v
+        working-directory: PythonProject/back_end

@@ -2,3 +2,4 @@ Flask>=3.0,<4.0
 gunicorn
 Flask-SQLAlchemy
 psycopg2-binary
+requests>=2.31,<3.0

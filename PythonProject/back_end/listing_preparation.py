@@ -104,6 +104,12 @@ def prepare_listing(raw: dict[str, Any], default_city: str | None = None) -> dic
         "description": description,
         "features": text_features,
         "source_url": raw.get("source_url"),
+        "source_domain": raw.get("source_domain"),
+        "image_url": raw.get("image_url"),
+        "latitude": raw.get("latitude"),
+        "longitude": raw.get("longitude"),
+        "price_currency": raw.get("price_currency"),
+        "raw_data": raw.get("raw_data"),
         "data_quality": {
             "has_price": price is not None,
             "has_area": area is not None,

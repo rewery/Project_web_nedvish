@@ -1,5 +1,5 @@
 import unittest
-from real_listing_import import extract_listing_from_html
+from real_listing_import import extract_listing_from_html, _safe_public_url
 
 
 class RealListingImportParserTests(unittest.TestCase):
@@ -33,6 +33,14 @@ class RealListingImportParserTests(unittest.TestCase):
         self.assertEqual(item["rooms"], 2)
         self.assertEqual(item["floor"], 4)
         self.assertEqual(item["total_floors"], 9)
+
+    def test_rejects_localhost_url(self):
+        with self.assertRaises(ValueError):
+            _safe_public_url('http://127.0.0.1:5000/')
+
+    def test_rejects_non_http_url(self):
+        with self.assertRaises(ValueError):
+            _safe_public_url('file:///etc/passwd')
 
     def test_missing_values_are_none(self):
         item = extract_listing_from_html("<html><title>Объект</title></html>", "https://example.org/x")

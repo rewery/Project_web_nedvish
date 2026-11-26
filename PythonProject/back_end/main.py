@@ -4,6 +4,7 @@ from recommendations import rank_properties
 from listing_preparation import prepare_search_listings
 from property_scoring import filter_by_budget, score_listing_features, estimate_market_price
 from demo_dataset import parse_apartment_text_content
+from real_listing_import import fetch_listing_url
 
 from pathlib import Path
 from assistant_service import process_message
@@ -85,6 +86,62 @@ def assistant_chat():
         return jsonify({
             "error": "Не удалось обработать сообщение."
         }), 500
+
+
+
+@app.route('/api/recommendations/import-url', methods=['POST'])
+def recommendations_import_url():
+    """Fetch one user-supplied listing URL, extract and normalize its fields."""
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Ожидается JSON-объект."}), 400
+    url = payload.get("url")
+    city = payload.get("city")
+    if not isinstance(url, str) or not url.strip():
+        return jsonify({"error": "Передайте ссылку в поле url."}), 400
+    try:
+        raw = fetch_listing_url(url.strip(), city)
+        prepared = prepare_search_listings([raw], city or raw.get("city") or "Не указан")
+        item = prepared[0] if prepared else raw
+        return jsonify({
+            "status": "success",
+            "source": item.get("source_domain"),
+            "raw_listing": raw,
+            "listing": item,
+            "quality": item.get("data_quality"),
+            "note": "Неизвлечённые характеристики остаются пустыми; данные требуют проверки по оригиналу."
+        }), 200
+    except PermissionError as exc:
+        return jsonify({"error": str(exc), "code": "robots_disallowed"}), 403
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 422
+
+
+@app.route('/api/recommendations/import-urls', methods=['POST'])
+def recommendations_import_urls():
+    """Batch import up to 10 user-provided listing URLs (sequential, respectful)."""
+    payload = request.get_json(silent=True)
+    urls = payload.get("urls") if isinstance(payload, dict) else None
+    city = payload.get("city") if isinstance(payload, dict) else None
+    if not isinstance(urls, list) or not urls or len(urls) > 10:
+        return jsonify({"error": "Передайте от 1 до 10 ссылок в поле urls."}), 400
+    if not all(isinstance(url, str) and url.strip() for url in urls):
+        return jsonify({"error": "Каждая ссылка должна быть непустой строкой."}), 400
+    results, errors = [], []
+    for url in urls:
+        try:
+            raw = fetch_listing_url(url.strip(), city)
+            prepared = prepare_search_listings([raw], city or raw.get("city") or "Не указан")
+            results.extend(prepared or [raw])
+        except (PermissionError, ValueError) as exc:
+            errors.append({"url": url, "error": str(exc)})
+    return jsonify({
+        "results": results,
+        "count": len(results),
+        "errors": errors,
+        "attempted": len(urls),
+        "note": "Импорт последовательный; доступ проверяется по robots.txt, блокировки не обходятся."
+    }), 200
 
 
 @app.route('/api/recommendations/rank', methods=['POST'])

@@ -242,7 +242,9 @@ def fetch_listing_url(url: str, city: str | None = None) -> dict:
     if not _robots_allows(url, session):
         raise PermissionError("robots.txt не разрешает сбор либо его правила не удалось проверить.")
     try:
-        response = session.get(url, timeout=TIMEOUT, allow_redirects=True, stream=True)
+        response = session.get(url, timeout=TIMEOUT, allow_redirects=False, stream=True)
+        if response.is_redirect or response.is_permanent_redirect:
+            raise ValueError("Перенаправление запрещено для безопасности. Откройте конечную ссылку вручную.")
         _safe_public_url(response.url)  # validate redirect destination, too
         if response.status_code != 200:
             raise ValueError(f"Сайт вернул HTTP {response.status_code}.")

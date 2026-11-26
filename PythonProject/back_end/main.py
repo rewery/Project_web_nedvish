@@ -144,6 +144,66 @@ def recommendations_import_urls():
     }), 200
 
 
+
+@app.route('/api/recommendations/evaluate-urls', methods=['POST'])
+def recommendations_evaluate_urls():
+    """Import user-provided URLs and immediately rank successfully parsed listings."""
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Ожидается JSON-объект."}), 400
+    profile = payload.get("profile")
+    urls = payload.get("urls")
+    city = payload.get("city")
+    if not isinstance(profile, dict) or not isinstance(profile.get("priorities"), dict):
+        return jsonify({"error": "В profile должен быть объект priorities."}), 400
+    if not isinstance(urls, list) or not urls or len(urls) > 10:
+        return jsonify({"error": "Передайте от 1 до 10 ссылок в поле urls."}), 400
+    if not all(isinstance(url, str) and url.strip() for url in urls):
+        return jsonify({"error": "Каждая ссылка должна быть непустой строкой."}), 400
+
+    imported, errors = [], []
+    for url in urls:
+        try:
+            raw = fetch_listing_url(url.strip(), city)
+            prepared = prepare_search_listings([raw], city or raw.get("city") or "Не указан")
+            if prepared:
+                imported.append(prepared[0])
+            else:
+                errors.append({"url": url, "error": "Не удалось нормализовать объявление."})
+        except (PermissionError, ValueError) as exc:
+            errors.append({"url": url, "error": str(exc)})
+
+    budget = payload.get("budget") or profile.get("budget")
+    filtered, rejected = filter_by_budget(imported, budget)
+    enriched = []
+    for row in filtered:
+        item = dict(row)
+        item["criterion_scores"] = score_listing_features(item, profile)
+        item["market_analysis"] = estimate_market_price(item, filtered)
+        market_price_score = item["market_analysis"].get("price_score")
+        if market_price_score is not None:
+            item["criterion_scores"]["price"] = market_price_score
+        enriched.append(item)
+    ranked = rank_properties(profile, enriched)
+    sources = {row.get("id"): row for row in enriched}
+    for result in ranked:
+        original = sources.get(result.get("id"), {})
+        for field in ("price", "area", "rooms", "floor", "total_floors", "address",
+                      "source_url", "source_domain", "image_url", "price_currency",
+                      "market_analysis", "data_quality"):
+            result[field] = original.get(field)
+    return jsonify({
+        "results": ranked,
+        "count": len(ranked),
+        "imported_count": len(imported),
+        "rejected_by_budget": rejected,
+        "errors": errors,
+        "attempted": len(urls),
+        "price_scoring_status": "market_relative_when_comparable_data_exists",
+        "note": "Результаты рассчитаны только по успешно извлечённым данным; для рыночной оценки нужно минимум три аналога одного района."
+    }), 200
+
+
 @app.route('/api/recommendations/rank', methods=['POST'])
 def recommendations_rank():
     """Принимает профиль приоритетов и нормализованные оценки объявлений."""
